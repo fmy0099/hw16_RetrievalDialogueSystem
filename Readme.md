@@ -2,36 +2,39 @@
 实践项目三Retrieval Dialogue System
 
 一、实验概述
-1.seq_context:random selected 10 thounsand context and query 
-2.seq_replies:related 10 thousand groups of candidates
-3.task:find out the correct reply among 10 candidates
-4.format of submission:one reply per line, the reply is the index(start with 0) of the right among 10 canditates
+
+	1.seq_context:random selected 10 thounsand context and query 
+	2.seq_replies:related 10 thousand groups of candidates
+	3.task:find out the correct reply among 10 candidates
+	4.format of submission:one reply per line, the reply is the index(start with 0) of the right among 10 canditates
 
 二、实验环境：
-个人笔记本/Intel(R) Core(TM) i5-8250U CPU @ 1.60GHz 1.80GHz /8G内存/Win10 64位 
-  Python 3.6.10
-  torch  1.6.0+cpu
-  jieba  0.42.1
-  torchtext 0.5.0
+
+	个人笔记本/Intel(R) Core(TM) i5-8250U CPU @ 1.60GHz 1.80GHz /8G内存/Win10 64位 
+	  Python 3.6.10
+	  torch  1.6.0+cpu
+	  jieba  0.42.1
+	  torchtext 0.5.0
   
 三、实验参数
-parser.add_argument('-lr', type=float, default=0.001, help='学习率')
-parser.add_argument('-batch-size', type=int, default=128)
-parser.add_argument('-context-len', type=int, default=200)
-parser.add_argument('-epoch', type=int, default=1)
-parser.add_argument('-embedding-dim', type=int, default=300, help='词向量的维度')
-parser.add_argument('-hidden_size', type=int, default=128, help='lstm中神经单元数')
-parser.add_argument('-layer-num', type=int, default=1, help='lstm stack的层数')
-parser.add_argument('-bidirectional', type=bool, default=True, help='是否使用双向lstm')
-parser.add_argument('-static', type=bool, default=True, help='是否使用预训练词向量')
-parser.add_argument('-fine-tune', type=bool, default=True, help='预训练词向量是否要微调')
-parser.add_argument('-log-interval', type=int, default=1, help='经过多少iteration记录一次训练状态')
-parser.add_argument('-test-interval', type=int, default=100, help='经过多少iteration对验证集进行测试')
-parser.add_argument('-save-best', type=bool, default=True, help='当得到更好的准确度是否要保存')
-parser.add_argument('-save-dir', type=str, default='model_dir', help='存储训练模型位置')
-parser.add_argument('-vocab-path', type=str, 
-                    default='D:/Summer/DeepL-data/glove.840B.300d/glove.840B.300d.txt', 
-                    help='词向量,static为True时生效')
+
+	parser.add_argument('-lr', type=float, default=0.001, help='学习率')
+	parser.add_argument('-batch-size', type=int, default=128)
+	parser.add_argument('-context-len', type=int, default=200)
+	parser.add_argument('-epoch', type=int, default=1)
+	parser.add_argument('-embedding-dim', type=int, default=300, help='词向量的维度')
+	parser.add_argument('-hidden_size', type=int, default=128, help='lstm中神经单元数')
+	parser.add_argument('-layer-num', type=int, default=1, help='lstm stack的层数')
+	parser.add_argument('-bidirectional', type=bool, default=True, help='是否使用双向lstm')
+	parser.add_argument('-static', type=bool, default=True, help='是否使用预训练词向量')
+	parser.add_argument('-fine-tune', type=bool, default=True, help='预训练词向量是否要微调')
+	parser.add_argument('-log-interval', type=int, default=1, help='经过多少iteration记录一次训练状态')
+	parser.add_argument('-test-interval', type=int, default=100, help='经过多少iteration对验证集进行测试')
+	parser.add_argument('-save-best', type=bool, default=True, help='当得到更好的准确度是否要保存')
+	parser.add_argument('-save-dir', type=str, default='model_dir', help='存储训练模型位置')
+	parser.add_argument('-vocab-path', type=str, 
+			    default='D:/Summer/DeepL-data/glove.840B.300d/glove.840B.300d.txt', 
+			    help='词向量,static为True时生效')
 
 四、实验步骤
 
@@ -81,5 +84,5 @@ parser.add_argument('-vocab-path', type=str,
 	do_predict_work()
 
 五、参考文献
-《基于检索的聊天机器人的实现》https://blog.csdn.net/irving_zhang/article/details/78788929
+	《基于检索的聊天机器人的实现》https://blog.csdn.net/irving_zhang/article/details/78788929
 
