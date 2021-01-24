@@ -1,88 +1,85 @@
 
-Êµ¼ùÏîÄ¿ÈıRetrieval Dialogue System
+å®è·µé¡¹ç›®ä¸‰Retrieval Dialogue System
 
-Ò»¡¢ÊµÑé¸ÅÊö
+ä¸€ã€å®éªŒæ¦‚è¿°
 1.seq_context:random selected 10 thounsand context and query 
 2.seq_replies:related 10 thousand groups of candidates
 3.task:find out the correct reply among 10 candidates
 4.format of submission:one reply per line, the reply is the index(start with 0) of the right among 10 canditates
 
-¶ş¡¢ÊµÑé»·¾³£º
-¸öÈË±Ê¼Ç±¾/Intel(R) Core(TM) i5-8250U CPU @ 1.60GHz 1.80GHz /8GÄÚ´æ/Win10 64Î» 
+äºŒã€å®éªŒç¯å¢ƒï¼š
+ä¸ªäººç¬”è®°æœ¬/Intel(R) Core(TM) i5-8250U CPU @ 1.60GHz 1.80GHz /8Gå†…å­˜/Win10 64ä½ 
   Python 3.6.10
   torch  1.6.0+cpu
   jieba  0.42.1
   torchtext 0.5.0
   
-Èı¡¢ÊµÑé²ÎÊı
-parser = argparse.ArgumentParser(description='RNN QA')
-
-parser.add_argument('-lr', type=float, default=0.001, help='Ñ§Ï°ÂÊ')
+ä¸‰ã€å®éªŒå‚æ•°
+parser.add_argument('-lr', type=float, default=0.001, help='å­¦ä¹ ç‡')
 parser.add_argument('-batch-size', type=int, default=128)
 parser.add_argument('-context-len', type=int, default=200)
 parser.add_argument('-epoch', type=int, default=1)
-parser.add_argument('-embedding-dim', type=int, default=300, help='´ÊÏòÁ¿µÄÎ¬¶È')
-parser.add_argument('-hidden_size', type=int, default=128, help='lstmÖĞÉñ¾­µ¥ÔªÊı')
-parser.add_argument('-layer-num', type=int, default=1, help='lstm stackµÄ²ãÊı')
-parser.add_argument('-bidirectional', type=bool, default=True, help='ÊÇ·ñÊ¹ÓÃË«Ïòlstm')
-parser.add_argument('-static', type=bool, default=True, help='ÊÇ·ñÊ¹ÓÃÔ¤ÑµÁ·´ÊÏòÁ¿')
-parser.add_argument('-fine-tune', type=bool, default=True, help='Ô¤ÑµÁ·´ÊÏòÁ¿ÊÇ·ñÒªÎ¢µ÷')
-parser.add_argument('-log-interval', type=int, default=1, help='¾­¹ı¶àÉÙiteration¼ÇÂ¼Ò»´ÎÑµÁ·×´Ì¬')
-parser.add_argument('-test-interval', type=int, default=100, help='¾­¹ı¶àÉÙiteration¶ÔÑéÖ¤¼¯½øĞĞ²âÊÔ')
-parser.add_argument('-save-best', type=bool, default=True, help='µ±µÃµ½¸üºÃµÄ×¼È·¶ÈÊÇ·ñÒª±£´æ')
-parser.add_argument('-save-dir', type=str, default='model_dir', help='´æ´¢ÑµÁ·Ä£ĞÍÎ»ÖÃ')
+parser.add_argument('-embedding-dim', type=int, default=300, help='è¯å‘é‡çš„ç»´åº¦')
+parser.add_argument('-hidden_size', type=int, default=128, help='lstmä¸­ç¥ç»å•å…ƒæ•°')
+parser.add_argument('-layer-num', type=int, default=1, help='lstm stackçš„å±‚æ•°')
+parser.add_argument('-bidirectional', type=bool, default=True, help='æ˜¯å¦ä½¿ç”¨åŒå‘lstm')
+parser.add_argument('-static', type=bool, default=True, help='æ˜¯å¦ä½¿ç”¨é¢„è®­ç»ƒè¯å‘é‡')
+parser.add_argument('-fine-tune', type=bool, default=True, help='é¢„è®­ç»ƒè¯å‘é‡æ˜¯å¦è¦å¾®è°ƒ')
+parser.add_argument('-log-interval', type=int, default=1, help='ç»è¿‡å¤šå°‘iterationè®°å½•ä¸€æ¬¡è®­ç»ƒçŠ¶æ€')
+parser.add_argument('-test-interval', type=int, default=100, help='ç»è¿‡å¤šå°‘iterationå¯¹éªŒè¯é›†è¿›è¡Œæµ‹è¯•')
+parser.add_argument('-save-best', type=bool, default=True, help='å½“å¾—åˆ°æ›´å¥½çš„å‡†ç¡®åº¦æ˜¯å¦è¦ä¿å­˜')
+parser.add_argument('-save-dir', type=str, default='model_dir', help='å­˜å‚¨è®­ç»ƒæ¨¡å‹ä½ç½®')
 parser.add_argument('-vocab-path', type=str, 
                     default='D:/Summer/DeepL-data/glove.840B.300d/glove.840B.300d.txt', 
-                    help='´ÊÏòÁ¿,staticÎªTrueÊ±ÉúĞ§')
-args = parser.parse_args()
+                    help='è¯å‘é‡,staticä¸ºTrueæ—¶ç”Ÿæ•ˆ')
 
-ËÄ¡¢ÊµÑé²½Öè
+å››ã€å®éªŒæ­¥éª¤
 
-1¡¢Êı¾İÔ¤´¦Àí:prepare_data.py
-	#¼ÓÔØÍ£ÓÃ´Ê
+1ã€æ•°æ®é¢„å¤„ç†:prepare_data.py
+	#åŠ è½½åœç”¨è¯
   stop_words = get_stop_words()
 		
-	#ÇĞ·Ötrain.txt£¬39¸öÑµÁ·Êı¾İÎÄ¼ş + 1¸öÑéÖ¤Êı¾İÎÄ¼ş
+	#åˆ‡åˆ†train.txtï¼Œ39ä¸ªè®­ç»ƒæ•°æ®æ–‡ä»¶ + 1ä¸ªéªŒè¯æ•°æ®æ–‡ä»¶
 	split_train_file(args.in_train_path,args.out_train_path)
 		    
-	#Éú³É´Ê»ã±í£¬°´´ÊÆµµ¹ÅÅĞò
+	#ç”Ÿæˆè¯æ±‡è¡¨ï¼ŒæŒ‰è¯é¢‘å€’æ’åº
 	vocab,stoi = make_vocab(args.out_train_path,stop_words)
 		    
-	#ÑµÁ·Êı¾İ¼¯ºÍÑéÖ¤Êı¾İ¼¯·Ö´Êºó×ª³ÉcsvÎÄ¼ş£¬
-	#Ã¿¸öquery¶ÔÓ¦1¸öÕıÀı¡¢1¸ö¸ºÀı£¨´Óreply¼¯ºÏÖĞËæ»úÉú³É£©¡£
+	#è®­ç»ƒæ•°æ®é›†å’ŒéªŒè¯æ•°æ®é›†åˆ†è¯åè½¬æˆcsvæ–‡ä»¶ï¼Œ
+	#æ¯ä¸ªqueryå¯¹åº”1ä¸ªæ­£ä¾‹ã€1ä¸ªè´Ÿä¾‹ï¼ˆä»replyé›†åˆä¸­éšæœºç”Ÿæˆï¼‰ã€‚
 	txt2csv(args.out_train_path,stop_words)
-	csv¸ñÊ½ÈçÏÂ£º
+	csvæ ¼å¼å¦‚ä¸‹ï¼š
 			label,context+query,reply
-			1,Ğ»Ğ» Ò»ÇĞÄã ¿ªĞÄ ºÃ¿ªĞÄàÅ ĞÄÀï Ñ§Ï°£¬Ä³Ä³Ä³,Ä³Ä³Ä³
-			0,Ğ»Ğ» Ò»ÇĞÄã ¿ªĞÄ ºÃ¿ªĞÄàÅ ĞÄÀï Ñ§Ï°£¬Ä³Ä³Ä³,Ò»Ö±
-			1,ËŞÉá À÷º¦£¬ÑÛ¾¦ ÌØ±ğ ¸ãĞ¦ ÕâÍÁ ²»ºÃ Äó ¾õµÃ Í¦ ¿É°®,ÌØ±ğ ¿É°®
-			0,ËŞÉá À÷º¦£¬ÑÛ¾¦ ÌØ±ğ ¸ãĞ¦ ÕâÍÁ ²»ºÃ Äó ¾õµÃ Í¦ ¿É°®,ĞÂÎÅ
+			1,è°¢è°¢ ä¸€åˆ‡ä½  å¼€å¿ƒ å¥½å¼€å¿ƒå—¯ å¿ƒé‡Œ å­¦ä¹ ï¼ŒæŸæŸæŸ,æŸæŸæŸ
+			0,è°¢è°¢ ä¸€åˆ‡ä½  å¼€å¿ƒ å¥½å¼€å¿ƒå—¯ å¿ƒé‡Œ å­¦ä¹ ï¼ŒæŸæŸæŸ,ä¸€ç›´
+			1,å®¿èˆ å‰å®³ï¼Œçœ¼ç› ç‰¹åˆ« æç¬‘ è¿™åœŸ ä¸å¥½ æ è§‰å¾— æŒº å¯çˆ±,ç‰¹åˆ« å¯çˆ±
+			0,å®¿èˆ å‰å®³ï¼Œçœ¼ç› ç‰¹åˆ« æç¬‘ è¿™åœŸ ä¸å¥½ æ è§‰å¾— æŒº å¯çˆ±,æ–°é—»
 
 		    
-	#²âÊÔÊı¾İ¼¯·Ö´Ê
+	#æµ‹è¯•æ•°æ®é›†åˆ†è¯
 	split_train_file('data/seq_replies.txt','data/seq_replies_split.txt')
 	split_train_file('data/seq_context.txt','data/seq_context_split.txt')
 
 
-2¡¢ÑµÁ·Ä£ĞÍ:train-rnn.py
+2ã€è®­ç»ƒæ¨¡å‹:train-rnn.py
 	
-	ÑµÁ·Ä¿±ê£º
-			½«context+queryºÍreply¾­¹ıÍ¬Ò»¸öË«ÏòlstmÄ£ĞÍ£¬
-			p = ¡¾context+query×ªÖÃ¡¿*¡¾¾ØÕów¡¿*¡¾reply¡¿È«Á¬½Ó
-			Ê¹µÃp×î½Ó½üÓÚ1¡£
+	è®­ç»ƒç›®æ ‡ï¼š
+			å°†context+queryå’Œreplyç»è¿‡åŒä¸€ä¸ªåŒå‘lstmæ¨¡å‹ï¼Œ
+			p = ã€context+queryè½¬ç½®ã€‘*ã€çŸ©é˜µwã€‘*ã€replyã€‘å…¨è¿æ¥
+			ä½¿å¾—pæœ€æ¥è¿‘äº1ã€‚
 
-	ÑµÁ·²½Öè£º
-			#¼ÓÔØ´Ê»ã±í
-			#¼ÓÔØÄ£ĞÍ£¬²»´æÔÚÔòĞÂ½¨
-			#Æô¶¯ÑµÁ·Ïß³Ì
-			#ÑµÁ·¹ı³ÌÖĞ£¬¶¨ÆÚÊ¹ÓÃÑéÖ¤Êı¾İ¼¯×Ô¶¯ÑéÖ¤£¬»ñµÃ¸ü¸ßµÄaccuracyÊ±×Ô¶¯±£´æÄ£ĞÍ¡£
+	è®­ç»ƒæ­¥éª¤ï¼š
+			#åŠ è½½è¯æ±‡è¡¨
+			#åŠ è½½æ¨¡å‹ï¼Œä¸å­˜åœ¨åˆ™æ–°å»º
+			#å¯åŠ¨è®­ç»ƒçº¿ç¨‹
+			#è®­ç»ƒè¿‡ç¨‹ä¸­ï¼Œå®šæœŸä½¿ç”¨éªŒè¯æ•°æ®é›†è‡ªåŠ¨éªŒè¯ï¼Œè·å¾—æ›´é«˜çš„accuracyæ—¶è‡ªåŠ¨ä¿å­˜æ¨¡å‹ã€‚
 
 		
-3¡¢²âÊÔ£ºtrain-rnn.py
+3ã€æµ‹è¯•ï¼štrain-rnn.py
 
-	#¶Ô·Ö´ÊºóµÄseq_context.txt£¬seq_replies.txt½øĞĞÔ¤²â,Éú³É½á¹ûresult.txt
+	#å¯¹åˆ†è¯åçš„seq_context.txtï¼Œseq_replies.txtè¿›è¡Œé¢„æµ‹,ç”Ÿæˆç»“æœresult.txt
 	do_predict_work()
 
-Îå¡¢²Î¿¼ÎÄÏ×
-¡¶»ùÓÚ¼ìË÷µÄÁÄÌì»úÆ÷ÈËµÄÊµÏÖ¡·https://blog.csdn.net/irving_zhang/article/details/78788929
+äº”ã€å‚è€ƒæ–‡çŒ®
+ã€ŠåŸºäºæ£€ç´¢çš„èŠå¤©æœºå™¨äººçš„å®ç°ã€‹https://blog.csdn.net/irving_zhang/article/details/78788929
 
